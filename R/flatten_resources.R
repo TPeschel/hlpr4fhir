@@ -1,7 +1,15 @@
 ## This file contains all functions needed for flattening ##
 ## Exported functions are on top, internal functions below ##
 
-path <- node <- value <- attrib <- entry <- spath <- xpath <- column <- id <- dummy <- NULL #To stop "no visible binding" NOTE in check()
+path <-
+	node <-
+	value <-
+	attrib <-
+	entry <-
+	spath <-
+	xpath <-
+	column <-
+	id <- dummy <- NULL #To stop "no visible binding" NOTE in check()
 
 
 #' Flatten list of FHIR bundles
@@ -113,19 +121,17 @@ path <- node <- value <- attrib <- entry <- spath <- xpath <- column <- id <- du
 
 setGeneric(
 	name = "fhir_crack",
-	def = function(
-		bundles,
-		design,
-		sep                  = NULL,
-		brackets             = NULL,
-		rm_empty_cols        = NULL,
-		verbose              = 2,
-		data.table           = FALSE,
-		format               = NULL,
-		keep_attr            = NULL,
-		ncores               = 1,
-		remove_empty_columns = deprecated()
-	) {
+	def = function(bundles,
+				   design,
+				   sep                  = NULL,
+				   brackets             = NULL,
+				   rm_empty_cols        = NULL,
+				   verbose              = 2,
+				   data.table           = FALSE,
+				   format               = NULL,
+				   keep_attr            = NULL,
+				   ncores               = 1,
+				   remove_empty_columns = deprecated()) {
 		standardGeneric("fhir_crack")
 	}
 )
@@ -135,67 +141,81 @@ setGeneric(
 setMethod(
 	f          = "fhir_crack",
 	signature  = c(design = "fhir_table_description"),
-	definition = function(
-		bundles,
-		design,
-		sep                  = NULL,
-		brackets             = NULL,
-		rm_empty_cols        = NULL,
-		verbose              = 2,
-		data.table           = FALSE,
-		format               = NULL,
-		keep_attr            = NULL,
-		ncores               = 1,
-		remove_empty_columns = deprecated()
-	) {
-
-		if(lifecycle::is_present(remove_empty_columns)){
-			lifecycle::deprecate_warn(when = "2.0.0", what = "fhir_crack(remove_empty_columns)", with = "fhir_crack(rm_empty_cols)")
+	definition = function(bundles,
+						  design,
+						  sep                  = NULL,
+						  brackets             = NULL,
+						  rm_empty_cols        = NULL,
+						  verbose              = 2,
+						  data.table           = FALSE,
+						  format               = NULL,
+						  keep_attr            = NULL,
+						  ncores               = 1,
+						  remove_empty_columns = deprecated()) {
+		if (lifecycle::is_present(remove_empty_columns)) {
+			lifecycle::deprecate_warn(when = "2.0.0",
+									  what = "fhir_crack(remove_empty_columns)",
+									  with = "fhir_crack(rm_empty_cols)")
 			design@rm_empty_cols <- remove_empty_columns
 		}
 
 		#overwrite design with function arguments
-		if(!is.null(sep)) {
+		if (!is.null(sep)) {
 			design@sep <- sep
 		}
 
-		if(!is.null(brackets)) {
+		if (!is.null(brackets)) {
 			brackets <- fix_brackets(brackets = brackets)
 			design@brackets <- brackets
 		}
 
-		if(!is.null(rm_empty_cols)) {
+		if (!is.null(rm_empty_cols)) {
 			design@rm_empty_cols <- rm_empty_cols
 		}
 
-		if(!is.null(format)) {
+		if (!is.null(format)) {
 			design@format <- format
 		}
 
-		if(!is.null(keep_attr)) {
+		if (!is.null(keep_attr)) {
 			design@keep_attr <- keep_attr
 		}
 
 		validObject(object = design, complete = TRUE)
 		#Check for dangerous XPath expressions ins cols
 		cols <- design@cols
-		dangerCols <- sapply(cols, function(x) {any(grepl(esc("//"), x))})
+		dangerCols <- sapply(cols, function(x) {
+			any(grepl(esc("//"), x))
+		})
 
-		if(any(dangerCols)) {
+		if (any(dangerCols)) {
 			warning(
 				"In the cols element of the table description, you specified XPath expressions containing '//' which point to an ",
 				"arbitrary level in the resource. \nThis can result in unexpected behaviour, e.g. when the searched element appears ",
-				"on different levels of the resource. \n", "We strongly advise to only use the fully specified relative XPath in the cols ",
+				"on different levels of the resource. \n",
+				"We strongly advise to only use the fully specified relative XPath in the cols ",
 				"element, e.g. 'ingredient/strength/numerator/code' instead of search paths like '//code'. \n",
-				"This warning is thrown for the following data.frame descriptions: ", paste(names(cols)[dangerCols], collapse = ", ")
+				"This warning is thrown for the following data.frame descriptions: ",
+				paste(names(cols)[dangerCols], collapse = ", ")
 			)
 		}
 
-		df <- crack_bundles_to_one_table(bundles = bundles, table_description = design, data.table = data.table, ncores = ncores, verbose = verbose)
+		df <-
+			crack_bundles_to_one_table(
+				bundles = bundles,
+				table_description = design,
+				data.table = data.table,
+				ncores = ncores,
+				verbose = verbose
+			)
 
-		if(0 < verbose) {cat('finished.\n')}
+		if (0 < verbose) {
+			cat('finished.\n')
+		}
 
-		assign(x = "canonical_design", value = design, envir = fhircrackr_env)
+		assign(x = "canonical_design",
+			   value = design,
+			   envir = fhircrackr_env)
 
 		df
 	}
@@ -208,126 +228,119 @@ setMethod(
 setMethod(
 	f          = "fhir_crack",
 	signature  = c(design = "fhir_design"),
-	definition = function(
-		bundles,
-		design,
-		sep                  = NULL,
-		brackets             = NULL,
-		rm_empty_cols        = NULL,
-		verbose              = 2,
-		data.table           = FALSE,
-		format               = NULL,
-		keep_attr            = NULL,
-		ncores               = 1,
-		remove_empty_columns = deprecated()
-	) {
+	definition = function(bundles,
+						  design,
+						  sep                  = NULL,
+						  brackets             = NULL,
+						  rm_empty_cols        = NULL,
+						  verbose              = 2,
+						  data.table           = FALSE,
+						  format               = NULL,
+						  keep_attr            = NULL,
+						  ncores               = 1,
+						  remove_empty_columns = deprecated()) {
 		#overwrite design with function arguments
-		if(!is.null(sep)) {
-			design <- fhir_design(lapply(
-				design,
-				function(x) {
-					x@sep <- sep
-					x
-				})
-			)
+		if (!is.null(sep)) {
+			design <- fhir_design(lapply(design,
+										 function(x) {
+										 	x@sep <- sep
+										 	x
+										 }))
 		}
 
-		if(!is.null(brackets)) {
+		if (!is.null(brackets)) {
 			brackets <- fix_brackets(brackets = brackets)
-			design <- fhir_design(
-				lapply(
-					design,
-					function(x) {
-						x@brackets <- brackets
-						x
-					}
-				)
-			)
+			design <- fhir_design(lapply(design,
+										 function(x) {
+										 	x@brackets <- brackets
+										 	x
+										 }))
 		}
 
 		##### remove at some point #####
-		if(lifecycle::is_present(remove_empty_columns)){
-			lifecycle::deprecate_warn(when = "2.0.0", what = "fhir_crack(remove_empty_columns)", with = "fhir_crack(rm_empty_cols)")
-			design <- fhir_design(
-				lapply(
-					design,
-					function(x) {
-						x@rm_empty_cols <- remove_empty_columns
-						x
-					}
-				)
-			)
+		if (lifecycle::is_present(remove_empty_columns)) {
+			lifecycle::deprecate_warn(when = "2.0.0",
+									  what = "fhir_crack(remove_empty_columns)",
+									  with = "fhir_crack(rm_empty_cols)")
+			design <- fhir_design(lapply(design,
+										 function(x) {
+										 	x@rm_empty_cols <- remove_empty_columns
+										 	x
+										 }))
 		}
 		############################
 
-		if(!is.null(rm_empty_cols)) {
-			design <- fhir_design(
-				lapply(
-					design,
-					function(x) {
-						x@rm_empty_cols <- rm_empty_cols
-						x
-					}
-				)
-			)
+		if (!is.null(rm_empty_cols)) {
+			design <- fhir_design(lapply(design,
+										 function(x) {
+										 	x@rm_empty_cols <- rm_empty_cols
+										 	x
+										 }))
 		}
 
-		if(!is.null(format)) {
-			design <- fhir_design(
-				lapply(
-					design,
-					function(x) {
-						x@format <- format
-						x
-					}
-				)
-			)
+		if (!is.null(format)) {
+			design <- fhir_design(lapply(design,
+										 function(x) {
+										 	x@format <- format
+										 	x
+										 }))
 		}
 
-		if(!is.null(keep_attr)) {
-			design <- fhir_design(
-				lapply(
-					design,
-					function(x) {
-						x@keep_attr <- keep_attr
-						x
-					}
-				)
-			)
+		if (!is.null(keep_attr)) {
+			design <- fhir_design(lapply(design,
+										 function(x) {
+										 	x@keep_attr <- keep_attr
+										 	x
+										 }))
 		}
 
 		validObject(object = design, complete = TRUE)
 		#Check for dangerous XPath expressions ins cols
 		cols <- lapply(
 			X   = design,
-			FUN = function(x) {c(x@cols)}
+			FUN = function(x) {
+				c(x@cols)
+			}
 		)
-		dangerCols <- sapply(cols, function(x) {any(grepl(esc("//"), x))})
+		dangerCols <- sapply(cols, function(x) {
+			any(grepl(esc("//"), x))
+		})
 
-		if(any(dangerCols)) {
+		if (any(dangerCols)) {
 			warning(
 				"In the cols element of the design, you specified XPath expressions containing '//' which point to an ",
 				"arbitrary level in the resource. \nThis can result in unexpected behaviour, e.g. when the searched element appears ",
-				"on different levels of the resource. \n", "We strongly advise to only use the fully specified relative XPath in the cols ",
+				"on different levels of the resource. \n",
+				"We strongly advise to only use the fully specified relative XPath in the cols ",
 				"element, e.g. 'ingredient/strength/numerator/code' instead of search paths like '//code'. \n",
-				"This warning is thrown for the following data.frame descriptions: ", paste(names(cols)[dangerCols], collapse = ", ")
+				"This warning is thrown for the following data.frame descriptions: ",
+				paste(names(cols)[dangerCols], collapse = ", ")
 			)
 		}
 
-		if(length(bundles) < 1) {
+		if (length(bundles) < 1) {
 			warning('No bundles present in bundles list \'bundles\'. NULL will be returned.')
 			return(NULL)
 		}
 
-		if(length(design) < 1) {
+		if (length(design) < 1) {
 			warning('No table descriptions present in design \'design\'. NULL will be returned.')
 			return(NULL)
 		}
 
-		dfs <- crack_bundles_to_tables(bundles = bundles, design = design, data.table = data.table, ncores = ncores, verbose = verbose)
+		dfs <-
+			crack_bundles_to_tables(
+				bundles = bundles,
+				design = design,
+				data.table = data.table,
+				ncores = ncores,
+				verbose = verbose
+			)
 
 		#if(0 < verbose) {message("FHIR-Resources cracked. \n")}
-		assign(x = "canonical_design", value = design, envir = fhircrackr_env)
+		assign(x = "canonical_design",
+			   value = design,
+			   envir = fhircrackr_env)
 		dfs
 	}
 )
@@ -348,27 +361,32 @@ setMethod(
 #' extraction progress will be printed. Defaults to 2.
 #' @noRd
 
-crack_bundles_to_tables <- function(bundles, design, data.table = FALSE, ncores = 1, verbose = 0) {
-	ncores <- limit_ncores(ncores)
-	tables <- lapply(
-		X   = design,
-		FUN = function(table_description) {
-			crack_bundles_to_one_table(
-				bundles           = bundles,
-				table_description = table_description,
-				data.table        = data.table,
-				ncores            = ncores,
-				verbose           = verbose
-			)
-		}
-	)
+crack_bundles_to_tables <-
+	function(bundles,
+			 design,
+			 data.table = FALSE,
+			 ncores = 1,
+			 verbose = 0) {
+		ncores <- limit_ncores(ncores)
+		tables <- lapply(
+			X   = design,
+			FUN = function(table_description) {
+				crack_bundles_to_one_table(
+					bundles           = bundles,
+					table_description = table_description,
+					data.table        = data.table,
+					ncores            = ncores,
+					verbose           = verbose
+				)
+			}
+		)
 
-	if(data.table) {
-		fhir_dt_list(dt_list = tables, design = design)
-	} else {
-		fhir_df_list(df_list = tables, design = design)
+		if (data.table) {
+			fhir_dt_list(dt_list = tables, design = design)
+		} else {
+			fhir_df_list(df_list = tables, design = design)
+		}
 	}
-}
 
 
 #' Create DF/DT from bundles and fhir_table_description
@@ -383,86 +401,132 @@ crack_bundles_to_tables <- function(bundles, design, data.table = FALSE, ncores 
 #' @param verbose An integer vector of length one. If 0, nothing is printed, if 1, only finishing message is printed, if > 1,
 #' extraction progress will be printed. Defaults to 2.
 #' @noRd
-crack_bundles_to_one_table <- function(
-		bundles,
-		table_description,
-		data.table        = FALSE,
-		ncores            = 1,
-		verbose           = 0
-	) {
+crack_bundles_to_one_table <- function(bundles,
+									   table_description,
+									   data.table        = FALSE,
+									   ncores            = 1,
+									   verbose           = 0) {
 	os <- get_os()
 	available_cores <- get_ncores(os)
 	ncores <- limit_ncores(ncores)
-	if(0 < verbose) cat(
-		stringr::str_c(
-			'Cracking ',
-			length(bundles),
-			' ',
-			table_description@resource,
-			's\' ',
-			if(1 == length(bundles)) 'Bundle' else 'Bundles',
-			' on a ',
-			toupper(os),
-			'-Engine using ',
-			ncores,
-			'/',
-			available_cores,
-			if(1 == available_cores) ' CPU' else ' CPUs',
-			' ... \n'
+	if (0 < verbose)
+		cat(
+			stringr::str_c(
+				'Cracking ',
+				length(bundles),
+				' ',
+				table_description@resource,
+				's\' ',
+				if (1 == length(bundles))
+					'Bundle'
+				else
+					'Bundles',
+				' on a ',
+				toupper(os),
+				'-Engine using ',
+				ncores,
+				'/',
+				available_cores,
+				if (1 == available_cores)
+					' CPU'
+				else
+					' CPUs',
+				' ... \n'
+			)
 		)
-	)
 
-	table <- if(0 < length(table_description@cols)) {
-		if(table_description@format == 'wide') {
-			crack_wide_given_columns(bundles = bundles, table_description = table_description, ncores = ncores)
+	table <- if (0 < length(table_description@cols)) {
+		if (table_description@format == 'wide') {
+			crack_wide_given_columns(
+				bundles = bundles,
+				table_description = table_description,
+				ncores = ncores
+			)
 		} else {
-			crack_compact_given_columns(bundles = bundles, table_description = table_description, ncores = ncores)
+			crack_compact_given_columns(
+				bundles = bundles,
+				table_description = table_description,
+				ncores = ncores
+			)
 		}
 	} else {
-		if(table_description@format == 'wide') {
-			crack_wide_all_columns(bundles = bundles, table_description = table_description, ncores = ncores)
+		if (table_description@format == 'wide') {
+			crack_wide_all_columns(
+				bundles = bundles,
+				table_description = table_description,
+				ncores = ncores
+			)
 		} else {
-			crack_compact_all_columns(bundles = bundles, table_description = table_description, ncores = ncores)
+			crack_compact_all_columns(
+				bundles = bundles,
+				table_description = table_description,
+				ncores = ncores
+			)
 		}
 	}
 
 	###Deal with resources/elements that were not found
 	#given columns
-	if(0 < length(table_description@cols)){
+	if (0 < length(table_description@cols)) {
 		#rm_emtpy_cols=FALSE
-		if(!table_description@rm_empty_cols){
+		if (!table_description@rm_empty_cols) {
 			#nothing was found. Return empty table with appropriate names
-			if(nrow(table)==0){
-				table <- data.table::setnames(data.table(matrix(nrow = 0, ncol = length(table_description@cols))), names(table_description@cols))
-				warning("The resource type or columns you are looking for don't seem to be present in the bundles.\n ",
-						"Returning an empty table.")
+			if (nrow(table) == 0) {
+				table <-
+					data.table::setnames(data.table(matrix(
+						nrow = 0,
+						ncol = length(table_description@cols)
+					)),
+					names(table_description@cols))
+				warning(
+					"The resource type or columns you are looking for don't seem to be present in the bundles.\n ",
+					"Returning an empty table."
+				)
 				#some items were found: Fill missing with NA
 			} else {
 				names <- names(table)
-				if(0 < length(table_description@brackets)){
-					regexpr_ids <- stringr::str_c(esc(table_description@brackets[1]), "([0-9]+(\\.[0-9]+)*)", esc(table_description@brackets[2]))
+				if (0 < length(table_description@brackets)) {
+					regexpr_ids <-
+						stringr::str_c(
+							esc(table_description@brackets[1]),
+							"([0-9]+(\\.[0-9]+)*)",
+							esc(table_description@brackets[2])
+						)
 					names <- unique(gsub(regexpr_ids, "", names))
 				}
-				empty_cols <- setdiff(names(table_description@cols), gsub("@.*$", "", names))
-				if(0 < length(empty_cols)){table[,(empty_cols):=NA]}
+				empty_cols <-
+					setdiff(names(table_description@cols),
+							gsub("@.*$", "", names))
+				if (0 < length(empty_cols)) {
+					table[, (empty_cols) := NA]
+				}
 			}
 			#rm_empty_cols=TRUE
 		} else {
-			if(nrow(table)==0){
-				warning("The resource type or columns you are looking for don't seem to be present in the bundles.\n ",
-						"Returning an empty table.")
+			if (nrow(table) == 0) {
+				warning(
+					"The resource type or columns you are looking for don't seem to be present in the bundles.\n ",
+					"Returning an empty table."
+				)
 			}
 		}
 		#set column order to order stated in table_description (only works for compact table)
-		data.table::setcolorder(x = table, neworder = names(table_description@cols)[names(table_description@cols) %in% names(table)])
+		data.table::setcolorder(x = table,
+								neworder = names(table_description@cols)[names(table_description@cols) %in% names(table)])
 
 		#all columns
 	} else {
-		if(nrow(table)==0){warning("The resource type you are looking for (",table_description@resource ,") doesn't seem to be present in the bundles.\n ",
-								   "Returning an empty table.")}
+		if (nrow(table) == 0) {
+			warning(
+				"The resource type you are looking for (",
+				table_description@resource ,
+				") doesn't seem to be present in the bundles.\n ",
+				"Returning an empty table."
+			)
+		}
 	}
 
-	if(!data.table) {
+	if (!data.table) {
 		data.table::setDF(table)
 	}
 
@@ -476,35 +540,71 @@ crack_bundles_to_one_table <- function(
 #' @param ncores The number of cores for parallelisation
 #' @noRd
 #'
-crack_wide_all_columns <- function(bundles, table_description, ncores = 1) {
-	if(2 == length(table_description@brackets)) {
-		bra <- table_description@brackets[[1]]
-		ket <- table_description@brackets[[2]]
-	} else {
-		stop("You need to provide brackets if you want to crack to format 'wide'")
+crack_wide_all_columns <-
+	function(bundles, table_description, ncores = 1) {
+		if (2 == length(table_description@brackets)) {
+			bra <- table_description@brackets[[1]]
+			ket <- table_description@brackets[[2]]
+		} else {
+			stop("You need to provide brackets if you want to crack to format 'wide'")
+		}
+		result <-
+			if (ncores > 1) {
+				temp <- tempdir()
+				fhir_save_rds(bundles, temp)
+				unique(data.table::rbindlist(
+					parallel::mclapply(seq_along(bundles),
+									   function(bundle_id,
+									   		 table_description,
+									   		 bra,
+									   		 ket,
+									   		 use_indices) {
+									   	bundle <-
+									   		fhir_unserialize(readRDS(file = paste0(temp, "/", bundle_id, ".rds")))
+									   	wide_all_columns(
+									   		bundle,
+									   		table_description = table_description,
+									   		bra = bra,
+									   		ket = ket
+									   	)
+									   },
+									   table_description = table_description, bra = bra, ket = ket,
+									   mc.cores = ncores),
+					use.names = TRUE,
+					fill = TRUE
+				))
+
+			} else{
+				unique(data.table::rbindlist(
+					lapply(
+						bundles,
+						wide_all_columns,
+						table_description = table_description,
+						bra = bra,
+						ket = ket
+					),
+					use.names = TRUE,
+					fill = TRUE
+				))
+
+			}
+
+		result <-
+			if (nrow(result) == 0) {
+				result
+			} else {
+				unique(result[, -c('entry')])
+			}
+
+		ebra <- esc(bra)
+		eket <- esc(ket)
+		n <- separate_names(names = names(result), ebra, eket)
+		i <- separate_indices(names = names(result), ebra, eket)
+		o <- order(paste(n, i))
+		names(result) <- paste0(bra, i, ket, n)
+		setcolorder(result, o)
+		result
 	}
-	result <- data.table::rbindlist(
-		parallel::mclapply(
-			bundles,
-			wide_all_columns,
-			table_description = table_description, bra = bra, ket=ket,
-			mc.cores = ncores
-		),
-		use.names = TRUE,
-		fill      = TRUE
-	)
-
-	result <- if(nrow(result) == 0) {result} else {unique(result[, -c('entry')])}
-
-	ebra <- esc(bra)
-	eket <- esc(ket)
-	n <- separate_names(  names = names(result), ebra, eket)
-	i <- separate_indices(names = names(result), ebra, eket)
-	o <- order(paste(n, i))
-	names(result) <- paste0(bra, i, ket, n)
-	setcolorder(result, o)
-	result
-}
 
 #' Convert Bundles to a compact table when all elements should be extracted
 #' @param bundles A fhir_bundle_list
@@ -512,45 +612,58 @@ crack_wide_all_columns <- function(bundles, table_description, ncores = 1) {
 #' @param ncores The number of cores for parallelisation
 #' @noRd
 #'
-crack_compact_all_columns <- function(bundles, table_description, ncores = 1) {
-	use_indices <- FALSE
-	if(2 == length(table_description@brackets)) {
-		bra <- table_description@brackets[[1]]
-		ket <- table_description@brackets[[2]]
-		use_indices <- TRUE
-	}
-	if(ncores > 1){
-		temp <- tempdir()
-		fhir_save_rds(bundles, temp)
-		unique(
-			data.table::rbindlist(
-				parallel::mclapply(
-					seq_along(bundles),
-					function(bundle_id, table_description, bra, ket, use_indices){
-						bundle <- fhir_unserialize(readRDS(file = paste0(temp, "/", bundle_id, ".rds")))
-						compact_all_columns(bundle,table_description = table_description, bra = bra, ket=ket, use_indices=use_indices)
-					},
-					table_description = table_description, bra = bra, ket=ket, use_indices=use_indices,
-					mc.cores = ncores
-				),
+crack_compact_all_columns <-
+	function(bundles, table_description, ncores = 1) {
+		use_indices <- FALSE
+		if (2 == length(table_description@brackets)) {
+			bra <- table_description@brackets[[1]]
+			ket <- table_description@brackets[[2]]
+			use_indices <- TRUE
+		}
+
+		if (ncores > 1) {
+			temp <- tempdir()
+			fhir_save_rds(bundles, temp)
+			unique(data.table::rbindlist(
+				parallel::mclapply(seq_along(bundles),
+								   function(bundle_id,
+								   		 table_description,
+								   		 bra,
+								   		 ket,
+								   		 use_indices) {
+								   	bundle <-
+								   		fhir_unserialize(readRDS(file = paste0(temp, "/", bundle_id, ".rds")))
+								   	compact_all_columns(
+								   		bundle,
+								   		table_description = table_description,
+								   		bra = bra,
+								   		ket = ket,
+								   		use_indices = use_indices
+								   	)
+								   },
+								   table_description = table_description, bra = bra, ket = ket, use_indices =
+								   	use_indices,
+								   mc.cores = ncores),
 				use.names = TRUE,
 				fill = TRUE
-			)
-		)
-	}else{
-		unique(
-			data.table::rbindlist(
+			))
+
+		} else{
+			unique(data.table::rbindlist(
 				lapply(
 					bundles,
 					compact_all_columns,
-					table_description = table_description, bra = bra, ket=ket, use_indices=use_indices
+					table_description = table_description,
+					bra = bra,
+					ket = ket,
+					use_indices = use_indices
 				),
 				use.names = TRUE,
 				fill = TRUE
-			)
-		)
+			))
+
+		}
 	}
-}
 
 #' Convert Bundles to a wide table when only some elements should be extracted
 #' @param bundles A fhir_bundle_list
@@ -558,36 +671,72 @@ crack_compact_all_columns <- function(bundles, table_description, ncores = 1) {
 #' @param ncores The number of cores for parallelisation
 #' @noRd
 #'
-crack_wide_given_columns <- function(bundles, table_description, ncores = 1) {
-	rm_dummy <- FALSE
+crack_wide_given_columns <-
+	function(bundles, table_description, ncores = 1) {
+		rm_dummy <- FALSE
 
-	if(2 == length(table_description@brackets)) {
-		bra <- table_description@brackets[[1]]
-		ket <- table_description@brackets[[2]]
-	} else {
-		stop("You need to provide brackets if you want to crack to format 'wide'")
+		if (2 == length(table_description@brackets)) {
+			bra <- table_description@brackets[[1]]
+			ket <- table_description@brackets[[2]]
+		} else {
+			stop("You need to provide brackets if you want to crack to format 'wide'")
+		}
+
+		#add dummy column for id so each resource is represented in one row
+		if (!any(grepl("id", table_description@cols))) {
+			table_description@cols <-
+				fhir_columns(c(c(dummy = "id"), table_description@cols))
+			rm_dummy <- TRUE
+		}
+
+		result <-
+			if (ncores > 1) {
+				temp <- tempdir()
+				fhir_save_rds(bundles, temp)
+				unique(data.table::rbindlist(
+					parallel::mclapply(seq_along(bundles),
+									   function(bundle_id,
+									   		 table_description,
+									   		 bra,
+									   		 ket,
+									   		 use_indices) {
+									   	bundle <-
+									   		fhir_unserialize(readRDS(file = paste0(temp, "/", bundle_id, ".rds")))
+									   	wide_given_columns(
+									   		bundle,
+									   		table_description = table_description,
+									   		bra = bra,
+									   		ket = ket
+									   	)
+									   },
+									   table_description = table_description, bra = bra, ket = ket,
+									   mc.cores = ncores),
+					use.names = TRUE,
+					fill = TRUE
+				))
+
+			} else{
+				unique(data.table::rbindlist(
+					lapply(
+						bundles,
+						wide_given_columns,
+						table_description = table_description,
+						bra = bra,
+						ket = ket
+					),
+					use.names = TRUE,
+					fill = TRUE
+				))
+
+			}
+		if (nrow(result) != 0) {
+			result <- unique(result[, -c('entry')])
+		}
+		if (rm_dummy) {
+			result[, grep("dummy", names(result)) := NULL]
+		}
+		result
 	}
-
-	#add dummy column for id so each resource is represented in one row
-	if(!any(grepl("id", table_description@cols))){
-		table_description@cols <- fhir_columns(c(c(dummy="id"), table_description@cols))
-		rm_dummy <- TRUE
-	}
-
-	result <- data.table::rbindlist(
-		parallel::mclapply(
-			bundles,
-			wide_given_columns,
-			table_description = table_description, bra = bra, ket=ket,
-			mc.cores = ncores
-		),
-		use.names = TRUE,
-		fill = TRUE
-	)
-	if(nrow(result)!=0){result <- unique(result[, -c('entry')])}
-	if(rm_dummy){result[,grep("dummy", names(result)):=NULL]}
-	result
-}
 
 #' Convert Bundles to a compact table when only some elements should be extracted
 #' @param bundles A fhir_bundle_list
@@ -595,38 +744,73 @@ crack_wide_given_columns <- function(bundles, table_description, ncores = 1) {
 #' @param ncores The number of cores for parallelisation
 #' @noRd
 #'
-crack_compact_given_columns <- function(bundles, table_description, ncores = 1) {
-	use_indices <- FALSE
-	rm_dummy <- FALSE
-	bra <- ket <- ''
+crack_compact_given_columns <-
+	function(bundles, table_description, ncores = 1) {
+		use_indices <- FALSE
+		rm_dummy <- FALSE
+		bra <- ket <- ''
 
-	#add dummy column for id so each resource is represented in one row
-	if(!any(grepl("id", table_description@cols))){
-		table_description@cols <- fhir_columns(c(c(dummy="id"), table_description@cols))
-		rm_dummy <- TRUE
+		#add dummy column for id so each resource is represented in one row
+		if (!any(grepl("id", table_description@cols))) {
+			table_description@cols <-
+				fhir_columns(c(c(dummy = "id"), table_description@cols))
+			rm_dummy <- TRUE
+		}
+
+		if (2 == length(table_description@brackets)) {
+			bra <- table_description@brackets[[1]]
+			ket <- table_description@brackets[[2]]
+			use_indices <- TRUE
+		}
+
+		result <-
+			if (ncores > 1) {
+				temp <- tempdir()
+				fhir_save_rds(bundles, temp)
+				unique(data.table::rbindlist(
+					parallel::mclapply(seq_along(bundles),
+									   function(bundle_id,
+									   		 table_description,
+									   		 bra,
+									   		 ket,
+									   		 use_indices) {
+									   	bundle <-
+									   		fhir_unserialize(readRDS(file = paste0(temp, "/", bundle_id, ".rds")))
+									   	compact_given_columns(
+									   		bundle,
+									   		table_description = table_description,
+									   		bra = bra,
+									   		ket = ket,
+									   		use_indices = use_indices
+									   	)
+									   },
+									   table_description = table_description, bra = bra, ket = ket, use_indices =
+									   	use_indices,
+									   mc.cores = ncores),
+					use.names = TRUE,
+					fill = TRUE
+				))
+
+			} else{
+				unique(data.table::rbindlist(
+					lapply(
+						bundles,
+						compact_given_columns,
+						table_description = table_description,
+						bra = bra,
+						ket = ket,
+						use_indices = use_indices
+					),
+					use.names = TRUE,
+					fill = TRUE
+				))
+
+			}
+		if (rm_dummy) {
+			result[, grep("^dummy", names(result)) := NULL]
+		}
+		result
 	}
-
-	if(2 == length(table_description@brackets)) {
-		bra <- table_description@brackets[[1]]
-		ket <- table_description@brackets[[2]]
-		use_indices <- TRUE
-	}
-
-	result <- unique(
-		data.table::rbindlist(
-			parallel::mclapply(
-				bundles,
-				compact_given_columns,
-				table_description = table_description, bra = bra, ket=ket, use_indices=use_indices,
-				mc.cores = ncores
-			),
-			use.names = TRUE,
-			fill = TRUE
-		)
-	)
-	if(rm_dummy){result[,grep("^dummy", names(result)):=NULL]}
-	result
-}
 
 
 
@@ -772,11 +956,11 @@ wide_given_columns <- function(bundle, table_description, bra, ket) {
 }
 
 
-fhir_save_rds <- function(bundles, directory){
+fhir_save_rds <- function(bundles, directory) {
 	bundles_serialized <- fhir_serialize(bundles)
 	lapply(seq_along(bundles_serialized),
-		   function(i){
+		   function(i) {
 		   	saveRDS(bundles_serialized[[i]], paste0(directory, "/", i, ".rds"))
 
-	})
+		   })
 }
