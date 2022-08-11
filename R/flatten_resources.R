@@ -776,7 +776,7 @@ fhir_save_rds <- function(bundles, directory){
 	bundles_serialized <- fhir_serialize(bundles)
 	lapply(seq_along(bundles_serialized),
 		   function(i){
-		   	saveRDS(bundles_serialized[i], paste0(directory, "/", i, ".rds"))
+		   	saveRDS(bundles_serialized[[i]], paste0(directory, "/", i, ".rds"))
 
 	})
 }
